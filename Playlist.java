@@ -57,4 +57,56 @@ public class Playlist {
         }
 
     }
+
+    public void playNext(){
+        //Cancle the if if not needed
+        if(current.next != null){
+            current = current.next;
+        }
+    }
+
+    public void playPrevious(){
+        //Cancle the if if not needed
+        if(current.prev != null){
+            current = current.prev;
+        }
+    }
+
+    public String currentSong(){
+        return current.song.getSongPathString();
+    }
+
+    public void removeSong(){
+        String title = "you";
+        Node temp = head;
+        if(head == null){
+            System.out.println("There is no playlist");
+            //display deletion was not succesfull
+        }else{
+            do{
+                if(title == temp.song.getTitleString()){
+                    if (temp.prev != null) {
+                        temp.prev.next = temp.next;
+                    } else {
+                        head = temp.next; 
+                        head.prev = null;
+                    }
+
+                    if (temp.next != null) {
+                        temp.next.prev = temp.prev;
+                    } else {
+                        tail = temp.prev; 
+                        tail.next = null;
+                    }
+                    temp.next = null;
+                    temp.prev = null;
+                    //display deletion was succesfull
+                    return;
+                }else{
+                    temp = temp.next;
+                }
+            }while(temp.next != null);
+            //display deletion was not succesfull
+        }
+    }
 }
