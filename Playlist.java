@@ -27,6 +27,15 @@ public class Playlist {
         }
     }
 
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String name){
+        this.name = name;
+    }
+
+
     public void addSong(){
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setDialogTitle("Select a Mp3 File");
