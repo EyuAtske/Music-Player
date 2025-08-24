@@ -3,6 +3,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -10,12 +11,14 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class Playlist {
     private Node head, tail, current;
     private String name;
+    Path folderPath;
+
     public Playlist(String name){
         this.name = name;
         this.head = null;
         this.tail = null;
         this.current = null;
-        Path folderPath = Paths.get(name);
+        folderPath = Paths.get("Collections" , name);
         try {
             if(!Files.exists(folderPath)){
                 Files.createDirectories(folderPath);
@@ -35,6 +38,14 @@ public class Playlist {
         this.name = name;
     }
 
+    public Node getHeadNode(){
+        return head;
+    }
+
+    public Node getTailNode(){
+        return tail;
+    }
+
 
     public void addSong(){
         JFileChooser fileChooser = new JFileChooser();
@@ -48,6 +59,14 @@ public class Playlist {
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             System.out.println("File selected: " + selectedFile.getAbsolutePath());
+            File destinationFile = folderPath.toFile();
+            Path destinationPath = Paths.get(destinationFile.getAbsolutePath(), selectedFile.getName());
+            try {
+                Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+                System.out.println("File copied to: " + destinationPath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             
             //set up input window
             Song song = new Song();

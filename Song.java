@@ -1,6 +1,5 @@
 public class Song {
     private String title, artist, songPath;
-    private double duration;
     public Song(){
         this.title = "Unknown";
         this.artist = "Unknown";

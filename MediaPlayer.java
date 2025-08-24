@@ -7,14 +7,16 @@ import javax.swing.JPanel;
 import java.awt.*;
 
 public class MediaPlayer extends JFrame {
-    MediaPlayer(){
+    Collection collection;
+    MediaPlayer(Collection collection){
+        this.collection = collection;
         this.setSize(1200, 800);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         this.setTitle("Media Player");
         ImageIcon logo = new ImageIcon("musicalogo.png");
         ImageIcon note = new ImageIcon("music note.png");
-        ImageIcon play = new ImageIcon("play.png");
+        //ImageIcon play = new ImageIcon("play.png");
         ImageIcon pause = new ImageIcon("pause.png");
         ImageIcon next = new ImageIcon("next.png");
         ImageIcon prev = new ImageIcon("prev.png");
