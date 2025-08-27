@@ -24,8 +24,21 @@ public class Collection implements Serializable {
                 tail = pln;
             }
     }
+
     public Playlist currenPlaylist(){
         return current.playlist;
+    }
+
+    public Playlist secarchPlaylist(String name){
+        PlaylistNode temp = head;
+        while(temp.next != null){
+            if(temp.playlist.getName() == name){
+                return temp.playlist;
+            }else{
+                temp = temp.next;
+            }
+        }
+        return null;
     }
 
     public void saveCollection(Collection collection){
