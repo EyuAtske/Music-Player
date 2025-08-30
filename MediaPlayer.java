@@ -95,6 +95,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         playButton = new JButton();
         nextButton = new JButton();
         prevButton = new JButton();
+        progressBar = new JSlider(0, 100, 0);
         menuBar = new JMenuBar();
         addMenu = new JMenu("ADD");
         removeMenu = new JMenu("REMOVE");
@@ -104,7 +105,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         removeSong = new JMenuItem("Remove Song");
         removePlaylist = new JMenuItem("Remove Playlist");
 
-        this.add(menuBar, BorderLayout.NORTH);
+        this.setJMenuBar(menuBar);
         this.add(musicNote, BorderLayout.CENTER);
         this.add(playPanal, BorderLayout.SOUTH);
 
@@ -114,7 +115,13 @@ public class MediaPlayer extends JFrame implements ActionListener {
         playPanal.add(controlPanel, BorderLayout.CENTER);
 
         
-        
+        progressPanel.setLayout(new BorderLayout(10,0));
+        progressPanel.setOpaque(false);
+        progressPanel.add(currentTimeLabel, BorderLayout.WEST);
+        progressPanel.add(progressBar, BorderLayout.CENTER);
+        progressPanel.add(totalTimeLabel, BorderLayout.EAST);
+
+
         controlPanel.setPreferredSize(new Dimension(800, 100));
         controlPanel.setLayout(new GridLayout(1,3));
         controlPanel.setOpaque(false);
@@ -123,7 +130,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         controlPanel.add(gifPanel);
 
 
-        progressBar = new JSlider(0, 100, 0);
+        
         progressBar.setOpaque(false);
         progressBar.setPaintTicks(false);
         progressBar.setPaintTrack(true);
@@ -140,11 +147,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         totalTimeLabel.setForeground(new Color(0xe81a13));
 
 
-        progressPanel.setLayout(new BorderLayout(10,0));
-        progressPanel.setOpaque(false);
-        progressPanel.add(currentTimeLabel, BorderLayout.WEST);
-        progressPanel.add(progressBar, BorderLayout.CENTER);
-        progressPanel.add(totalTimeLabel, BorderLayout.EAST);
+        
 
 
         showProgressBar("C:\\Users\\eyuel\\Downloads\\Telegram Desktop\\ElevenLabs_2024-04-25T08_57_17_Brian_pre_s50_sb75_se0_b_m2.mp3");

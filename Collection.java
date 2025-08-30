@@ -51,11 +51,26 @@ public class Collection implements Serializable {
     }
 
     public Collection loadCollection(){
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(collectionPath.toFile()))) {
-            return (Collection) ois.readObject();
+        File file = collectionPath.toFile();
+
+        if (!file.exists()) {
+            return new Collection();
+        }
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            if (fis.available() == 0) { // file has no bytes
+                return new Collection();
+            }
+
+            try (ObjectInputStream ois = new ObjectInputStream(fis)) {
+                return (Collection) ois.readObject();
+            }
+        } catch (EOFException e) {
+            // empty or corrupted file
+            return new Collection();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
-        return null;
+        return new Collection();
     }
 }

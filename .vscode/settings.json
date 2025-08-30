@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "."
+    ],
+    "java.project.referencedLibraries": [
+        "c:\\projects\\MusicPlayer\\lib\\jlayer-1.0.1.jar",
+        "lib\\jlayer-1.0.1.jar",
+        "lib/jlayer-1.0.1.jar",
+        "lib/*.jar"
+    ]
+}
