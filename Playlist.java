@@ -1,29 +1,34 @@
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Scanner;
 
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class Playlist {
+public class Playlist implements Serializable {
     private Node head, tail, current;
-    private String name;
-    Path folderPath;
+    private String name, filePath;
+    // transient Path folderPath;
+    transient Scanner input;
 
     public Playlist(String name){
         this.name = name;
         this.head = null;
         this.tail = null;
         this.current = null;
-        folderPath = Paths.get("Collections" , name);
+        Path folderPath = Paths.get("Collections" , name);
         try {
             if(!Files.exists(folderPath)){
                 Files.createDirectories(folderPath);
+                filePath = folderPath.toString();
             }else{
                 System.out.println("Folder already exist");
+                filePath = folderPath.toString();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -59,7 +64,7 @@ public class Playlist {
         if (result == JFileChooser.APPROVE_OPTION) {
             File selectedFile = fileChooser.getSelectedFile();
             System.out.println("File selected: " + selectedFile.getAbsolutePath());
-            File destinationFile = folderPath.toFile();
+            File destinationFile = new File(filePath);
             Path destinationPath = Paths.get(destinationFile.getAbsolutePath(), selectedFile.getName());
             try {
                 Files.copy(selectedFile.toPath(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
@@ -67,9 +72,15 @@ public class Playlist {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+
+            input = new Scanner(System.in);
             
-            //set up input window
-            Song song = new Song();
+            System.out.println("Enter the title of the song:");
+            String title = input.nextLine();
+            System.out.println("Enter the artist of the song:");
+            String artist = input.nextLine();
+            String songPath = destinationPath.toString();
+            Song song = new Song(title, artist, songPath);
             Node newnode = new Node(song);
             if(head == null){
                 head = newnode;
@@ -112,19 +123,23 @@ public class Playlist {
             //display deletion was not succesfull
         }else{
             do{
-                if(title == temp.song.getTitleString()){
+                if(title.equals(temp.song.getTitleString())){
                     if (temp.prev != null) {
                         temp.prev.next = temp.next;
                     } else {
-                        head = temp.next; 
-                        head.prev = null;
+                        head = temp.next;
+                        if (head != null) {
+                            head.prev = null;
+                        }
                     }
 
                     if (temp.next != null) {
                         temp.next.prev = temp.prev;
                     } else {
-                        tail = temp.prev; 
-                        tail.next = null;
+                        tail = temp.prev;
+                        if (tail != null) {
+                            tail.next = null;
+                        }
                     }
                     temp.next = null;
                     temp.prev = null;
