@@ -1,4 +1,6 @@
-public class PlaylistNode {
+import java.io.Serializable;
+
+public class PlaylistNode implements Serializable {
     Playlist playlist;
     PlaylistNode next;
     PlaylistNode prev;

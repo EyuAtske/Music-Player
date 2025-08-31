@@ -1,4 +1,6 @@
-public class Node {
+import java.io.Serializable;
+
+public class Node implements Serializable{
     Song song;
     Node next;
     Node prev;

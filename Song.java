@@ -1,4 +1,6 @@
-public class Song {
+import java.io.Serializable;
+
+public class Song implements Serializable {
     private String title, artist, songPath;
     public Song(){
         this.title = "Unknown";
@@ -16,7 +18,7 @@ public class Song {
     public String getTitleString(){
         return title;
     }
-    public String getArtisString(){
+    public String getArtistString(){
         return artist;
     }
 
