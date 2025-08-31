@@ -4,7 +4,7 @@ import java.nio.file.Paths;
 
 public class Collection implements Serializable {
     private PlaylistNode head, tail, current;
-    Path collectionPath = Paths.get("Collections", "collections.dat");
+    //transient Path collectionPath = Paths.get("Collections", "collections.dat");
 
     public Collection(){
         this.head = null;
@@ -12,17 +12,25 @@ public class Collection implements Serializable {
         this.current = null;
     }
 
+    public PlaylistNode getHeadNode(){
+        return head;
+    }
+
+    public PlaylistNode getTailNode(){
+        return tail;
+    }
+
     public void addPlayList(Playlist pl){
         PlaylistNode pln = new PlaylistNode(pl);
         if(head == null){
-                head = pln;
-                tail = pln;
-                current = head;
-            }else{
-                tail.next = pln;
-                pln.prev = tail;
-                tail = pln;
-            }
+            head = pln;
+            tail = pln;
+            current = head;
+        }else{
+            tail.next = pln;
+            pln.prev = tail;
+            tail = pln;
+        }
     }
 
     public Playlist currenPlaylist(){
@@ -31,8 +39,8 @@ public class Collection implements Serializable {
 
     public Playlist secarchPlaylist(String name){
         PlaylistNode temp = head;
-        while(temp.next != null){
-            if(temp.playlist.getName() == name){
+        while(temp != null){
+            if(temp.playlist.getName().equals(name)){
                 return temp.playlist;
             }else{
                 temp = temp.next;
@@ -41,36 +49,32 @@ public class Collection implements Serializable {
         return null;
     }
 
-    public void saveCollection(Collection collection){
+    public void saveCollection(){
+        Path collectionPath = Paths.get("Collections", "collections.dat");
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(collectionPath.toFile()))) {
-            oos.writeObject(collection);
+            oos.writeObject(this);
             System.out.println("List saved successfully!");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Collection loadCollection(){
+    public static Collection loadCollection() {
+        Path collectionPath = Paths.get("Collections", "collections.dat");
         File file = collectionPath.toFile();
 
-        if (!file.exists()) {
+        if (!file.exists() || file.length() == 0) {
             return new Collection();
         }
 
-        try (FileInputStream fis = new FileInputStream(file)) {
-            if (fis.available() == 0) { // file has no bytes
-                return new Collection();
-            }
-
-            try (ObjectInputStream ois = new ObjectInputStream(fis)) {
-                return (Collection) ois.readObject();
-            }
-        } catch (EOFException e) {
-            // empty or corrupted file
-            return new Collection();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+            Collection loaded = (Collection) ois.readObject();
+            System.out.println("List loaded successfully!");
+            return loaded;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+
         return new Collection();
     }
 }
