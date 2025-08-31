@@ -18,11 +18,14 @@ import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import javax.swing.Timer;
 
 public class MediaPlayer extends JFrame implements ActionListener {
     Collection collection;
+    Path collectionPath = Paths.get("Collections", "collections.dat");
     ImageIcon logo;
     ImageIcon note;
     //ImageIcon play;
@@ -269,13 +272,33 @@ public class MediaPlayer extends JFrame implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == addSong){
+                Playlist tempSong;
                 String playlistName = getPlaylistName();
-                Playlist tempSong = collection.secarchPlaylist(playlistName);
-                tempSong.addSong();
+                if(playlistName != null){
+                    tempSong = collection.secarchPlaylist(playlistName);
+                }else{
+                    tempSong = null;
+                    System.out.println("it is null");
+                    return;
+                }
+                if(tempSong == null){
+                    JOptionPane.showMessageDialog(null,"no Playlist", "There is no playlist with this name", JOptionPane.WARNING_MESSAGE);
+                }else{
+                    tempSong.addSong();
+                    System.out.println("hereee");
+                }
             }
         }
 
         public String getPlaylistName(){
-            return JOptionPane.showInputDialog("What is the name of the playlist you want it in?");
+            if(collectionPath.toFile().exists() == false){
+                System.out.println("yes please");
+                JOptionPane.showMessageDialog(null,"no Playlist", "There are no playlist", JOptionPane.WARNING_MESSAGE);
+                return null;
+            }else{
+                System.out.println("it is not null");
+              return JOptionPane.showInputDialog("What is the name of the playlist you want it in?");  
+            }
+            
         }
 }
