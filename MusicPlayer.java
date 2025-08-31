@@ -1,7 +1,6 @@
 public class MusicPlayer {
     public static void main(String[] args) {
-        Collection collection = new Collection();
-        collection.loadCollection();
+        Collection collection = Collection.loadCollection();
         new MediaPlayer(collection);
     }
 }
