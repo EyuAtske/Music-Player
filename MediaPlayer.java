@@ -1,6 +1,7 @@
 import javax.sound.sampled.Clip;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -37,6 +38,8 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JPanel gifPanel;
     JPanel progressPanel;
     JPanel playPanal;
+    JPanel sideBar;
+    JPanel centerPanel;
     JLabel musicNote;
     JLabel musicTitle;
     JLabel musicArtist;
@@ -55,11 +58,14 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JMenuItem addPlaylist;
     JMenuItem removeSong;
     JMenuItem removePlaylist;
+    JMenuItem listPlaylist;
+    JComboBox<Song> songList;
     Timer timer;
     Clip clip;
     Player player;
     FileInputStream fis;
     BufferedInputStream bis;
+    private static boolean sidebarVisible = false;
 
     MediaPlayer(Collection collection){
         this.collection = collection;
@@ -86,6 +92,8 @@ public class MediaPlayer extends JFrame implements ActionListener {
         gifPanel = new JPanel();
         progressPanel = new JPanel();
         playPanal = new JPanel();
+        sideBar = new JPanel();
+        centerPanel = new JPanel();
         musicNote = new JLabel();
         musicTitle = new JLabel();
         musicArtist = new JLabel();
@@ -99,15 +107,21 @@ public class MediaPlayer extends JFrame implements ActionListener {
         menuBar = new JMenuBar();
         addMenu = new JMenu("ADD");
         removeMenu = new JMenu("REMOVE");
-        listMenu = new JMenu("List");
+        listMenu = new JMenu("LIST");
         addSong = new JMenuItem("Add Song");
         addPlaylist = new JMenuItem("Add Playlist");
         removeSong = new JMenuItem("Remove Song");
         removePlaylist = new JMenuItem("Remove Playlist");
+        listPlaylist = new JMenuItem("List Playlist");
 
         this.setJMenuBar(menuBar);
-        this.add(musicNote, BorderLayout.CENTER);
+        this.add(centerPanel, BorderLayout.CENTER);
         this.add(playPanal, BorderLayout.SOUTH);
+
+        centerPanel.setLayout(new BorderLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(musicNote, BorderLayout.CENTER);
+        centerPanel.add(sideBar, BorderLayout.EAST);
 
         playPanal.setLayout(new BorderLayout());
         playPanal.setOpaque(false);
@@ -150,13 +164,47 @@ public class MediaPlayer extends JFrame implements ActionListener {
         
 
 
-        showProgressBar("C:\\Users\\eyuel\\Downloads\\Telegram Desktop\\ElevenLabs_2024-04-25T08_57_17_Brian_pre_s50_sb75_se0_b_m2.mp3");
+        //showProgressBar("C:\\Users\\eyuel\\Downloads\\Telegram Desktop\\ElevenLabs_2024-04-25T08_57_17_Brian_pre_s50_sb75_se0_b_m2.mp3");
         
         
         musicNote.setIcon(note);
         musicNote.setSize(new Dimension(50,50));
         musicNote.setHorizontalAlignment(JLabel.CENTER);
         musicNote.setVerticalAlignment(JLabel.CENTER);
+
+        sideBar.setBackground(Color.white);
+        sideBar.setPreferredSize(new Dimension(0, musicNote.getHeight()));
+        sideBar.setLayout(new GridLayout());
+        getSidebarSongs();
+
+
+        Timer expandTimer = new Timer(5, null); // 5ms delay per step
+        expandTimer.addActionListener(new ActionListener() {  
+            int width = 0;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!sidebarVisible) { 
+                    // expanding
+                    width += 10;
+                    sideBar.setPreferredSize(new Dimension(width, centerPanel.getHeight()));
+                    centerPanel.revalidate();
+                    if (width >= 200) { // max width
+                        expandTimer.stop();
+                        sidebarVisible = true;
+                    }
+                } else { 
+                    // collapsing
+                    width -= 10;
+                    sideBar.setPreferredSize(new Dimension(width, centerPanel.getHeight()));
+                    centerPanel.revalidate();
+                    if (width <= 0) {
+                        expandTimer.stop();
+                        sidebarVisible = false;
+                    }
+                }
+            }
+        });
 
         menuBar.add(addMenu);
         menuBar.add(removeMenu);
@@ -166,11 +214,13 @@ public class MediaPlayer extends JFrame implements ActionListener {
         addMenu.add(addPlaylist);
         removeMenu.add(removeSong);
         removeMenu.add(removePlaylist);
+        listMenu.add(listPlaylist);
 
         addSong.addActionListener(this);
         addPlaylist.addActionListener(this);
         removeSong.addActionListener(this);
         removePlaylist.addActionListener(this);
+        listPlaylist.addActionListener(e -> expandTimer.start());
 
         titlePanel.setOpaque(false);
         titlePanel.setLayout(new GridLayout(2,1));
@@ -284,10 +334,21 @@ public class MediaPlayer extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null,"no Playlist", "There is no playlist with this name", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-            }
+            }else if(e.getSource() == listMenu){
+                System.out.println("`   ");
+            } 
         }
 
         public String getPlaylistName(){
             return JOptionPane.showInputDialog("What is the name of the playlist you want it in?");  
         }
-}
+
+        public void getSidebarSongs(){
+            for(Playlist p : collection.getCurrentPlaylists()){
+                songList = p.getSongList();
+                sideBar.add(songList);
+                //sideBar.revalidate();
+            }
+        }
+    }
+
