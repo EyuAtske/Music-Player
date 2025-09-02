@@ -1,18 +1,20 @@
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class Playlist implements Serializable {
+public class Playlist extends JFrame {
     private Node head, tail, current;
     private String name, filePath;
+    JComboBox<Song> songList = new JComboBox<>();
     // transient Path folderPath;
     transient Scanner input;
 
@@ -116,7 +118,7 @@ public class Playlist implements Serializable {
     }
 
     public void removeSong(){
-        String title = "you";
+        String title = "you"; //get title from user input
         Node temp = head;
         if(head == null){
             System.out.println("There is no playlist");
@@ -152,4 +154,25 @@ public class Playlist implements Serializable {
             //display deletion was not succesfull
         }
     }
+
+    public JComboBox<Song> getSongList(){
+        Node temp = head;
+        if(head == null){
+            System.out.println("There is no song in the playlist");
+        }else{
+            do{
+                Song temp1 = (Song) temp.song;
+                songList.addItem(temp1);
+                System.out.println("toString() -> " +temp1);
+                temp = temp.next;
+            }while(temp != null);
+        }
+        return songList;
+    }
+
+    // @Override
+    // public String toString() {
+    //     return name ; // what gets displayed in JComboBox
+    // }
+
 }
