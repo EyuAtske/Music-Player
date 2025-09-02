@@ -29,4 +29,9 @@ public class Song implements Serializable {
         this.artist = artist;
     }
 
+    @Override
+    public String toString(){
+        return title + " - " + artist;
+    }
+
 }
