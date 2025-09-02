@@ -1,9 +1,12 @@
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Collection implements Serializable {
     private PlaylistNode head, tail, current;
+    private List<Playlist> currentPlaylists = new ArrayList<>();
     //transient Path collectionPath = Paths.get("Collections", "collections.dat");
 
     public Collection(){
@@ -12,12 +15,16 @@ public class Collection implements Serializable {
         this.current = null;
     }
 
-    public PlaylistNode getHeadNode(){
-        return head;
-    }
+    // public PlaylistNode getHeadNode(){
+    //     return head;
+    // }
 
-    public PlaylistNode getTailNode(){
-        return tail;
+    // public PlaylistNode getTailNode(){
+    //     return tail;
+    // }
+
+    public List<Playlist> getCurrentPlaylists(){
+        return currentPlaylists;
     }
 
     public void addPlayList(Playlist pl){
@@ -30,6 +37,43 @@ public class Collection implements Serializable {
             tail.next = pln;
             pln.prev = tail;
             tail = pln;
+        }
+        currentPlaylists.add(pl);
+    }
+
+    public void removePlaylist(String name){
+        String title = name;
+        PlaylistNode temp = head;
+        if(head == null){
+            System.out.println("There is no playlist");
+        }else{
+            do{
+                if(title.equals(temp.playlist.getName())){
+                    if (temp.prev != null) {
+                        temp.prev.next = temp.next;
+                    } else {
+                        head = temp.next;
+                        if (head != null) {
+                            head.prev = null;
+                        }
+                    }
+
+                    if (temp.next != null) {
+                        temp.next.prev = temp.prev;
+                    } else {
+                        tail = temp.prev;
+                        if (tail != null) {
+                            tail.next = null;
+                        }
+                    }
+                    temp.next = null;
+                    temp.prev = null;
+                    currentPlaylists.remove(temp.playlist);
+                    return;
+                }else{
+                    temp = temp.next;
+                }
+            }while(temp.next != null);
         }
     }
 
