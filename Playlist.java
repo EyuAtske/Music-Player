@@ -6,15 +6,14 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
-import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class Playlist extends JFrame {
     private Node head, tail, current;
     private String name, filePath;
-    JComboBox<Song> songList = new JComboBox<>();
     // transient Path folderPath;
     transient Scanner input;
 
@@ -99,6 +98,20 @@ public class Playlist extends JFrame {
 
     }
 
+    public void addSongDirect(Song song) {
+    Node newNode = new Node(song);
+
+    if (head == null) {
+        head = newNode;
+        tail = newNode;
+        current = head;
+    } else {
+        tail.next = newNode;
+        newNode.prev = tail;
+        tail = newNode;
+    }
+}
+
     public void playNext(){
         //Cancle the if if not needed
         if(current.next != null){
@@ -155,15 +168,15 @@ public class Playlist extends JFrame {
         }
     }
 
-    public JComboBox<Song> getSongList(){
+    public DefaultMutableTreeNode getSongList(){
+        DefaultMutableTreeNode songList = new DefaultMutableTreeNode(this.name);
         Node temp = head;
         if(head == null){
             System.out.println("There is no song in the playlist");
         }else{
             do{
-                Song temp1 = (Song) temp.song;
-                songList.addItem(temp1);
-                System.out.println("toString() -> " +temp1);
+                DefaultMutableTreeNode item = new DefaultMutableTreeNode(temp.song);
+                songList.add(item);
                 temp = temp.next;
             }while(temp != null);
         }
