@@ -10,6 +10,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTree;
+
 import javazoom.jl.player.Player;
 //import javax.swing.border.Border;
 
@@ -21,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 import javax.swing.Timer;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class MediaPlayer extends JFrame implements ActionListener {
     Collection collection;
@@ -59,7 +62,8 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JMenuItem removeSong;
     JMenuItem removePlaylist;
     JMenuItem listPlaylist;
-    JComboBox<Song> songList;
+    DefaultMutableTreeNode songList;
+    JTree listSong;
     Timer timer;
     Clip clip;
     Player player;
@@ -80,11 +84,6 @@ public class MediaPlayer extends JFrame implements ActionListener {
         next = new ImageIcon("next.png");
         prev = new ImageIcon("prev.png");
         playnote = new ImageIcon("playnote.gif");
-
-
-        this.setIconImage(logo.getImage());
-        this.getContentPane().setBackground(new Color(0x2f2a29));
-        this.setVisible(true);
 
         controlPanel = new JPanel();
         titlePanel = new JPanel();
@@ -174,7 +173,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
 
         sideBar.setBackground(Color.white);
         sideBar.setPreferredSize(new Dimension(0, musicNote.getHeight()));
-        sideBar.setLayout(new GridLayout());
+        sideBar.setLayout(new BorderLayout());
         getSidebarSongs();
 
 
@@ -189,7 +188,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
                     width += 10;
                     sideBar.setPreferredSize(new Dimension(width, centerPanel.getHeight()));
                     centerPanel.revalidate();
-                    if (width >= 200) { // max width
+                    if (width >= 300) { // max width
                         expandTimer.stop();
                         sidebarVisible = true;
                     }
@@ -260,7 +259,10 @@ public class MediaPlayer extends JFrame implements ActionListener {
         prevButton.setContentAreaFilled(false);
         prevButton.setFocusPainted(false);
         
-        
+        this.setIconImage(logo.getImage());
+        this.getContentPane().setBackground(new Color(0x2f2a29));
+        this.setVisible(true);
+
     }
 
 
@@ -344,11 +346,14 @@ public class MediaPlayer extends JFrame implements ActionListener {
         }
 
         public void getSidebarSongs(){
+            DefaultMutableTreeNode root = new DefaultMutableTreeNode("Playlists");
             for(Playlist p : collection.getCurrentPlaylists()){
-                songList = p.getSongList();
-                sideBar.add(songList);
-                //sideBar.revalidate();
+                System.out.println(p.getName());
+                DefaultMutableTreeNode playlistNode = p.getSongList();
+                root.add(playlistNode);  
             }
+            listSong = new JTree(root);
+            sideBar.add(listSong);
         }
     }
 
