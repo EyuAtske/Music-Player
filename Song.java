@@ -31,7 +31,7 @@ public class Song implements Serializable {
 
     @Override
     public String toString(){
-        return title + " - " + artist;
+        return title + " by " + artist;
     }
 
 }
