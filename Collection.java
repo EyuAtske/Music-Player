@@ -7,21 +7,12 @@ import java.util.List;
 public class Collection implements Serializable {
     private PlaylistNode head, tail, current;
     private List<Playlist> currentPlaylists = new ArrayList<>();
-    //transient Path collectionPath = Paths.get("Collections", "collections.dat");
 
     public Collection(){
         this.head = null;
         this.tail = null;
         this.current = null;
     }
-
-    // public PlaylistNode getHeadNode(){
-    //     return head;
-    // }
-
-    // public PlaylistNode getTailNode(){
-    //     return tail;
-    // }
 
     public List<Playlist> getCurrentPlaylists(){
         return currentPlaylists;
@@ -74,6 +65,14 @@ public class Collection implements Serializable {
                     temp = temp.next;
                 }
             }while(temp.next != null);
+        }
+    }
+
+    public void display(){
+        PlaylistNode temp = head;
+        while(temp != null){
+            System.out.println(temp.playlist.getName());
+            temp = temp.next;
         }
     }
 
