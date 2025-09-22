@@ -8,6 +8,7 @@ import java.util.Scanner;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -28,7 +29,7 @@ public class Playlist extends JFrame {
                 Files.createDirectories(folderPath);
                 filePath = folderPath.toString();
             }else{
-                System.out.println("Folder already exist");
+                JOptionPane.showMessageDialog(null,"This folder already exists", "Existing Folder", JOptionPane.WARNING_MESSAGE);
                 filePath = folderPath.toString();
             }
         } catch (IOException e) {
@@ -76,10 +77,8 @@ public class Playlist extends JFrame {
 
             input = new Scanner(System.in);
             
-            System.out.println("Enter the title of the song:");
-            String title = input.nextLine();
-            System.out.println("Enter the artist of the song:");
-            String artist = input.nextLine();
+            String title = JOptionPane.showInputDialog("Enter the title of the song:");
+            String artist = JOptionPane.showInputDialog("Enter the artist of the song:");
             String songPath = destinationPath.toString();
             Song song = new Song(title, artist, songPath);
             Node newnode = new Node(song);
@@ -93,7 +92,7 @@ public class Playlist extends JFrame {
                 tail = newnode;
             }
         } else {
-            System.out.println("No file selected.");
+            JOptionPane.showMessageDialog(null,"No File has been selected", "No File", JOptionPane.WARNING_MESSAGE);
         }
 
     }
@@ -131,14 +130,14 @@ public class Playlist extends JFrame {
     }
 
     public void removeSong(){
-        String title = "you"; //get title from user input
+        String title = JOptionPane.showInputDialog("Enter the title of the song:");//get title from user input
         Node temp = head;
         if(head == null){
-            System.out.println("There is no playlist");
+            JOptionPane.showMessageDialog(null,"There is no playlist with this name", "No Playlist", JOptionPane.WARNING_MESSAGE);
             //display deletion was not succesfull
         }else{
             do{
-                if(title.equals(temp.song.getTitleString())){
+                if(title.equalsIgnoreCase(temp.song.getTitleString())){
                     if (temp.prev != null) {
                         temp.prev.next = temp.next;
                     } else {
@@ -158,13 +157,13 @@ public class Playlist extends JFrame {
                     }
                     temp.next = null;
                     temp.prev = null;
-                    //display deletion was succesfull
+                    JOptionPane.showMessageDialog(null,"The song deletion was succsusfull", "Song Deleted", JOptionPane.INFORMATION_MESSAGE);
                     return;
                 }else{
                     temp = temp.next;
                 }
-            }while(temp.next != null);
-            //display deletion was not succesfull
+            }while(temp != null);
+            JOptionPane.showMessageDialog(null,"There is no song with this credentials", "No song deleted", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -172,7 +171,7 @@ public class Playlist extends JFrame {
         DefaultMutableTreeNode songList = new DefaultMutableTreeNode(this.name);
         Node temp = head;
         if(head == null){
-            System.out.println("There is no song in the playlist");
+            JOptionPane.showMessageDialog(null,"There is no song in the playlist", "No Song", JOptionPane.WARNING_MESSAGE);
         }else{
             do{
                 DefaultMutableTreeNode item = new DefaultMutableTreeNode(temp.song);
@@ -183,9 +182,12 @@ public class Playlist extends JFrame {
         return songList;
     }
 
-    // @Override
-    // public String toString() {
-    //     return name ; // what gets displayed in JComboBox
-    // }
+    public void display(){
+        Node temp = head;
+        while(temp != null){
+            System.out.println( temp.song.getTitleString());
+            temp =temp.next;
+        }
+    }
 
 }
