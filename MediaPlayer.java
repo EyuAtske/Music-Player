@@ -1,7 +1,6 @@
 import javax.sound.sampled.Clip;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -9,6 +8,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTree;
 
@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 
 import javax.swing.Timer;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 public class MediaPlayer extends JFrame implements ActionListener {
     Collection collection;
@@ -34,6 +35,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
     ImageIcon next;
     ImageIcon prev;
     ImageIcon playnote;
+    ImageIcon menu;
 
     JPanel controlPanel;
     JPanel titlePanel;
@@ -43,6 +45,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JPanel playPanal;
     JPanel sideBar;
     JPanel centerPanel;
+    JPanel topPanel;
     JLabel musicNote;
     JLabel musicTitle;
     JLabel musicArtist;
@@ -52,16 +55,15 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JButton playButton;
     JButton nextButton;
     JButton prevButton;
+    JButton listButton;
     JSlider progressBar;
     JMenuBar menuBar;
     JMenu addMenu;
     JMenu removeMenu;
-    JMenu listMenu;
     JMenuItem addSong;
     JMenuItem addPlaylist;
     JMenuItem removeSong;
     JMenuItem removePlaylist;
-    JMenuItem listPlaylist;
     DefaultMutableTreeNode songList;
     JTree listSong;
     Timer timer;
@@ -84,6 +86,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         next = new ImageIcon("next.png");
         prev = new ImageIcon("prev.png");
         playnote = new ImageIcon("playnote.gif");
+        menu = new ImageIcon("menu.png");
 
         controlPanel = new JPanel();
         titlePanel = new JPanel();
@@ -93,6 +96,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         playPanal = new JPanel();
         sideBar = new JPanel();
         centerPanel = new JPanel();
+        topPanel = new JPanel();
         musicNote = new JLabel();
         musicTitle = new JLabel();
         musicArtist = new JLabel();
@@ -102,20 +106,30 @@ public class MediaPlayer extends JFrame implements ActionListener {
         playButton = new JButton();
         nextButton = new JButton();
         prevButton = new JButton();
+        listButton = new JButton();
         progressBar = new JSlider(0, 100, 0);
         menuBar = new JMenuBar();
         addMenu = new JMenu("ADD");
         removeMenu = new JMenu("REMOVE");
-        listMenu = new JMenu("LIST");
         addSong = new JMenuItem("Add Song");
         addPlaylist = new JMenuItem("Add Playlist");
         removeSong = new JMenuItem("Remove Song");
         removePlaylist = new JMenuItem("Remove Playlist");
-        listPlaylist = new JMenuItem("List Playlist");
 
         this.setJMenuBar(menuBar);
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(playPanal, BorderLayout.SOUTH);
+        this.add(topPanel, BorderLayout.NORTH);
+
+        listButton.setPreferredSize(new Dimension(80, 30));
+        listButton.setBorderPainted(false);
+        listButton.setContentAreaFilled(false);
+        listButton.setFocusPainted(false);
+        listButton.setIcon(menu);
+
+        topPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        topPanel.add(listButton);
+        topPanel.setOpaque(false);
 
         centerPanel.setLayout(new BorderLayout());
         centerPanel.setOpaque(false);
@@ -160,7 +174,18 @@ public class MediaPlayer extends JFrame implements ActionListener {
         totalTimeLabel.setForeground(new Color(0xe81a13));
 
 
-        
+        sideBar.setBackground(Color.white);
+        sideBar.setPreferredSize(new Dimension(0, musicNote.getHeight()));
+        sideBar.setLayout(new BorderLayout());
+
+
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Playlists");
+        DefaultTreeModel treeModel = new DefaultTreeModel(root);
+        listSong = new JTree(treeModel);
+
+        JScrollPane scrollPane = new JScrollPane(listSong);
+        sideBar.add(scrollPane);
+        getSidebarSongs();
 
 
         //showProgressBar("C:\\Users\\eyuel\\Downloads\\Telegram Desktop\\ElevenLabs_2024-04-25T08_57_17_Brian_pre_s50_sb75_se0_b_m2.mp3");
@@ -171,10 +196,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         musicNote.setHorizontalAlignment(JLabel.CENTER);
         musicNote.setVerticalAlignment(JLabel.CENTER);
 
-        sideBar.setBackground(Color.white);
-        sideBar.setPreferredSize(new Dimension(0, musicNote.getHeight()));
-        sideBar.setLayout(new BorderLayout());
-        getSidebarSongs();
+        
 
 
         Timer expandTimer = new Timer(5, null); // 5ms delay per step
@@ -205,21 +227,22 @@ public class MediaPlayer extends JFrame implements ActionListener {
             }
         });
 
+
+        listButton.addActionListener(e -> expandTimer.start());
+
         menuBar.add(addMenu);
         menuBar.add(removeMenu);
-        menuBar.add(listMenu);
 
         addMenu.add(addSong);
         addMenu.add(addPlaylist);
         removeMenu.add(removeSong);
         removeMenu.add(removePlaylist);
-        listMenu.add(listPlaylist);
 
         addSong.addActionListener(this);
         addPlaylist.addActionListener(this);
         removeSong.addActionListener(this);
         removePlaylist.addActionListener(this);
-        listPlaylist.addActionListener(e -> expandTimer.start());
+        
 
         titlePanel.setOpaque(false);
         titlePanel.setLayout(new GridLayout(2,1));
@@ -322,7 +345,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == addSong){
                 Playlist tempSong;
-                String playlistName = getPlaylistName();
+                String playlistName = getAddPlaylistName();
                 if(playlistName != null){
                     tempSong = collection.secarchPlaylist(playlistName);
                     if(tempSong != null){
@@ -336,13 +359,42 @@ public class MediaPlayer extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(null,"no Playlist", "There is no playlist with this name", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-            }else if(e.getSource() == listMenu){
-                System.out.println("`   ");
-            } 
+                getSidebarSongs();
+            }else if(e.getSource() == addPlaylist){
+                String playlistName = JOptionPane.showInputDialog("Enter the name of the playlist");
+                Playlist playlist = new Playlist(playlistName);
+                collection.addPlayList(playlist);
+                getSidebarSongs();
+            }else if(e.getSource() == removeSong){
+                Playlist tempSong;
+                String playlistName = getDelPlaylistName();
+                if(playlistName != null){
+                    tempSong = collection.secarchPlaylist(playlistName);
+                    if(tempSong != null){
+                        tempSong.display();
+                        tempSong.removeSong();
+                        collection.saveCollection();
+                    }else{
+                        JOptionPane.showMessageDialog(null,"There is no playlist with this name", "No Playlist", JOptionPane.WARNING_MESSAGE);
+                        return;
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"There is no playlist with this name", "No Playlist", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                getSidebarSongs();
+            }else if (e.getSource() == removePlaylist){
+                String playlistName = JOptionPane.showInputDialog("Enter the name of the playlist");
+                collection.removePlaylist(playlistName);
+                getSidebarSongs();
+            }
         }
 
-        public String getPlaylistName(){
+        public String getAddPlaylistName(){
             return JOptionPane.showInputDialog("What is the name of the playlist you want it in?");  
+        }
+        public String getDelPlaylistName(){
+            return JOptionPane.showInputDialog("What is the name of the playlist you want to delete in?");  
         }
 
         public void getSidebarSongs(){
@@ -352,8 +404,9 @@ public class MediaPlayer extends JFrame implements ActionListener {
                 DefaultMutableTreeNode playlistNode = p.getSongList();
                 root.add(playlistNode);  
             }
-            listSong = new JTree(root);
-            sideBar.add(listSong);
+            DefaultTreeModel model = (DefaultTreeModel) listSong.getModel();
+            model.setRoot(root);
+            model.reload();    
         }
     }
 
