@@ -83,7 +83,7 @@ public class Collection implements Serializable {
     public Playlist secarchPlaylist(String name){
         PlaylistNode temp = head;
         while(temp != null){
-            if(temp.playlist.getName().equals(name)){
+            if(temp.playlist.getName().equalsIgnoreCase(name)){
                 return temp.playlist;
             }else{
                 temp = temp.next;
