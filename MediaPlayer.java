@@ -11,9 +11,13 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 
-import javazoom.jl.player.Player;
-//import javax.swing.border.Border;
+import javazoom.jlgui.basicplayer.BasicController;
+import javazoom.jlgui.basicplayer.BasicPlayer;
+import javazoom.jlgui.basicplayer.BasicPlayerEvent;
+import javazoom.jlgui.basicplayer.BasicPlayerException;
+import javazoom.jlgui.basicplayer.BasicPlayerListener;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,16 +25,17 @@ import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Map;
 
 import javax.swing.Timer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
-public class MediaPlayer extends JFrame implements ActionListener {
+public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerListener {
     Collection collection;
     ImageIcon logo;
     ImageIcon note;
-    //ImageIcon play;
+    ImageIcon play;
     ImageIcon pause;
     ImageIcon next;
     ImageIcon prev;
@@ -68,10 +73,14 @@ public class MediaPlayer extends JFrame implements ActionListener {
     JTree listSong;
     Timer timer;
     Clip clip;
-    Player player;
     FileInputStream fis;
     BufferedInputStream bis;
     private static boolean sidebarVisible = false;
+    Playlist playlist;
+    private BasicPlayer player;
+    private boolean isPaused = false;
+    private long totalBytes = 0;
+    private long totalMicroseconds = 0;
 
     MediaPlayer(Collection collection){
         this.collection = collection;
@@ -81,7 +90,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         this.setTitle("Media Player");
         logo = new ImageIcon("musicalogo.png");
         note = new ImageIcon("music note.png");
-        //play = new ImageIcon("play.png");
+        play = new ImageIcon("play.png");
         pause = new ImageIcon("pause.png");
         next = new ImageIcon("next.png");
         prev = new ImageIcon("prev.png");
@@ -107,7 +116,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         nextButton = new JButton();
         prevButton = new JButton();
         listButton = new JButton();
-        progressBar = new JSlider(0, 100, 0);
+        //progressBar = new JSlider(0, 100, 0);
         menuBar = new JMenuBar();
         addMenu = new JMenu("ADD");
         removeMenu = new JMenu("REMOVE");
@@ -115,6 +124,11 @@ public class MediaPlayer extends JFrame implements ActionListener {
         addPlaylist = new JMenuItem("Add Playlist");
         removeSong = new JMenuItem("Remove Song");
         removePlaylist = new JMenuItem("Remove Playlist");
+        playlist = collection.currentPlaylist();
+        this.player = new BasicPlayer();
+        progressBar = new JSlider();
+        player.addBasicPlayerListener(this);
+        
 
         this.setJMenuBar(menuBar);
         this.add(centerPanel, BorderLayout.CENTER);
@@ -155,13 +169,12 @@ public class MediaPlayer extends JFrame implements ActionListener {
         controlPanel.add(titlePanel);
         controlPanel.add(playPanel);
         controlPanel.add(gifPanel);
-
-
         
         progressBar.setOpaque(false);
         progressBar.setPaintTicks(false);
         progressBar.setPaintTrack(true);
         progressBar.setPaintLabels(false);
+        progressBar.setValue(0);
         progressBar.setUI(new javax.swing.plaf.metal.MetalSliderUI() {
             @Override
             public void paintThumb(Graphics g) {
@@ -186,9 +199,6 @@ public class MediaPlayer extends JFrame implements ActionListener {
         JScrollPane scrollPane = new JScrollPane(listSong);
         sideBar.add(scrollPane);
         getSidebarSongs();
-
-
-        //showProgressBar("C:\\Users\\eyuel\\Downloads\\Telegram Desktop\\ElevenLabs_2024-04-25T08_57_17_Brian_pre_s50_sb75_se0_b_m2.mp3");
         
         
         musicNote.setIcon(note);
@@ -249,10 +259,10 @@ public class MediaPlayer extends JFrame implements ActionListener {
         titlePanel.add(musicTitle);
         titlePanel.add(musicArtist);
 
-        musicTitle.setText("Unknown");
+        musicTitle.setText("Title: "+playlist.currentSongTitle());
         musicTitle.setForeground(new Color(0xe81a13));
         musicTitle.setFont(new Font("Bold", Font.BOLD, 20));
-        musicArtist.setText("Unknown");
+        musicArtist.setText("Artist: "+playlist.currentSongArtist());
         musicArtist.setForeground(new Color(0xe81a13));
         musicArtist.setFont(new Font("Bold", Font.BOLD, 20));
 
@@ -267,7 +277,7 @@ public class MediaPlayer extends JFrame implements ActionListener {
         playPanel.add(playButton);
         playPanel.add(nextButton);
 
-        playButton.setIcon(pause);
+        playButton.setIcon(play);
         playButton.setBorderPainted(false);
         playButton.setContentAreaFilled(false);
         playButton.setFocusPainted(false);
@@ -281,6 +291,10 @@ public class MediaPlayer extends JFrame implements ActionListener {
         prevButton.setBorderPainted(false);
         prevButton.setContentAreaFilled(false);
         prevButton.setFocusPainted(false);
+
+        playButton.addActionListener(this);
+        prevButton.addActionListener(this);
+        nextButton.addActionListener(this);
         
         this.setIconImage(logo.getImage());
         this.getContentPane().setBackground(new Color(0x2f2a29));
@@ -289,56 +303,56 @@ public class MediaPlayer extends JFrame implements ActionListener {
     }
 
 
-    public void showProgressBar(String fileString) {
-    try {
-        File musicFile = new File(fileString);
-        fis = new FileInputStream(musicFile);
-        bis = new BufferedInputStream(fis);
-        player = new Player(bis);
-
-        long totalBytes = musicFile.length(); // total file size in bytes
-
-        // Estimate total duration (approximate, depends on bitrate)
-        int totalSeconds = (int) (totalBytes / 16000);
-        totalTimeLabel.setText(formatTime(totalSeconds));
-
-        // Thread to play the song
-        Thread playThread = new Thread(() -> {
-            try {
+    public void play(String filepath) {
+        try {
+            if (isPaused) {
+                player.resume();
+                isPaused = false;
+            } else {
+                player.open(new File(filepath));
                 player.play();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
-        });
-
-        // Swing Timer to update progress bar
-        timer = new Timer(1000, e -> {
-            try {
-                long remaining = fis.available();
-                long played = totalBytes - remaining;
-                int progress = (int) ((played * 100) / totalBytes);
-                progressBar.setValue(progress);
-
-                int currentSeconds = (int) (played / 16000);
-                currentTimeLabel.setText(formatTime(currentSeconds));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
-
-        playThread.start();
-        timer.start();
-
-        } catch (Exception e) {
+        } catch (BasicPlayerException e) {
             e.printStackTrace();
         }
-        }
+    }
 
-        private String formatTime(int seconds) {
-            int min = seconds / 60;
-            int sec = seconds % 60;
-            return String.format("%02d:%02d", min, sec);
+    public void pause() {
+        try {
+            player.pause();
+            isPaused = true;
+        } catch (BasicPlayerException e) {
+            e.printStackTrace();
         }
+    }
+
+    public void stop() {
+        try {
+            player.stop();
+            isPaused = false;
+        } catch (BasicPlayerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void seek(long bytes) {
+        try {
+            player.seek(bytes);
+        } catch (BasicPlayerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public long getTotalBytes() {
+        return totalBytes;
+    }
+
+    private String formatTime(long microseconds) {
+        long totalSeconds = microseconds / 1_000_000;
+        long minutes = totalSeconds / 60;
+        long seconds = totalSeconds % 60;
+        return String.format("%d:%02d", minutes, seconds);
+    }
 
 
         @Override
@@ -387,6 +401,14 @@ public class MediaPlayer extends JFrame implements ActionListener {
                 String playlistName = JOptionPane.showInputDialog("Enter the name of the playlist");
                 collection.removePlaylist(playlistName);
                 getSidebarSongs();
+            }else if(e.getSource() == playButton){
+                if(playButton.getIcon() == play){
+                    play(playlist.currentSong());
+                    playButton.setIcon(pause);
+                }else{
+                    pause();
+                    playButton.setIcon(play);
+                }
             }
         }
 
@@ -407,6 +429,70 @@ public class MediaPlayer extends JFrame implements ActionListener {
             DefaultTreeModel model = (DefaultTreeModel) listSong.getModel();
             model.setRoot(root);
             model.reload();    
+        }
+
+        @Override
+        public void opened(Object stream, Map properties) {
+            if (properties.containsKey("audio.length.bytes")) {
+                Object lenObj = properties.get("audio.length.bytes");
+                if (lenObj instanceof Number) {
+                    totalBytes = ((Number) lenObj).longValue();
+                }
+            }
+
+            if (properties.containsKey("duration")) {
+                Object durObj = properties.get("duration");
+                if (durObj instanceof Number) {
+                    totalMicroseconds = ((Number) durObj).longValue();
+
+                    SwingUtilities.invokeLater(() -> {
+                        currentTimeLabel.setText("0:00");
+                        totalTimeLabel.setText(formatTime(totalMicroseconds));
+                    });
+                }
+            }
+        }
+
+        @Override
+        public void progress(int bytesread, long microseconds, byte[] pcmdata, Map properties) {
+            if (totalBytes > 0 && !progressBar.getValueIsAdjusting()) { 
+                int progress = (int) ((bytesread * 100) / totalBytes);
+                progressBar.setValue(progress);
+            }
+
+            // update elapsed time
+            SwingUtilities.invokeLater(() -> {
+                currentTimeLabel.setText(formatTime(microseconds));
+                totalTimeLabel.setText(formatTime(totalMicroseconds));
+            });
+        }
+
+        @Override
+        public void stateUpdated(BasicPlayerEvent event) {
+            int state = event.getCode();
+            switch(state) {
+                case BasicPlayerEvent.PLAYING:
+                    System.out.println("Playing...");
+                    break;
+                case BasicPlayerEvent.PAUSED:
+                    System.out.println("Paused");
+                    break;
+                case BasicPlayerEvent.EOM:
+                    System.out.println("End of media");//make it go to the next song
+                    break;
+                case BasicPlayerEvent.STOPPED:
+                    SwingUtilities.invokeLater(() -> {
+                        currentTimeLabel.setText("0:00");
+                        totalTimeLabel.setText("0:00");
+                        progressBar.setValue(0);
+                    });
+                    break;
+            }
+        }
+
+        @Override
+        public void setController(BasicController controller) {
+            throw new UnsupportedOperationException("Unimplemented method 'setController'");
         }
     }
 
