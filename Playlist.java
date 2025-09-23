@@ -97,20 +97,6 @@ public class Playlist extends JFrame {
 
     }
 
-    public void addSongDirect(Song song) {
-    Node newNode = new Node(song);
-
-    if (head == null) {
-        head = newNode;
-        tail = newNode;
-        current = head;
-    } else {
-        tail.next = newNode;
-        newNode.prev = tail;
-        tail = newNode;
-    }
-}
-
     public void playNext(){
         //Cancle the if if not needed
         if(current.next != null){
@@ -127,6 +113,14 @@ public class Playlist extends JFrame {
 
     public String currentSong(){
         return current.song.getSongPathString();
+    }
+
+    public String currentSongTitle(){
+        return current.song.getTitleString();
+    }
+
+    public String currentSongArtist(){
+        return current.song.getArtistString();
     }
 
     public void removeSong(){
