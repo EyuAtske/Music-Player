@@ -57,6 +57,16 @@ public class Collection implements Serializable {
                             tail.next = null;
                         }
                     }
+
+                    if (current == temp) {
+                        if (temp.next != null) {
+                            current = temp.next;
+                        } else if (temp.prev != null) {
+                            current = temp.prev;
+                        } else {
+                            current = null;
+                        }
+                    }
                     temp.next = null;
                     temp.prev = null;
                     currentPlaylists.remove(temp.playlist);
@@ -76,7 +86,7 @@ public class Collection implements Serializable {
         }
     }
 
-    public Playlist currenPlaylist(){
+    public Playlist currentPlaylist(){
         return current.playlist;
     }
 
