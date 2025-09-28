@@ -4,6 +4,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class Collection implements Serializable {
     private PlaylistNode head, tail, current;
     private List<Playlist> currentPlaylists = new ArrayList<>();
@@ -70,12 +72,42 @@ public class Collection implements Serializable {
                     temp.next = null;
                     temp.prev = null;
                     currentPlaylists.remove(temp.playlist);
+                    deletePlaylistFolder(temp.playlist.getFolderPath());
                     return;
                 }else{
                     temp = temp.next;
                 }
-            }while(temp.next != null);
+            }while(temp != null);
         }
+    }
+
+    public void deletePlaylistFolder(String folderPath) {
+        File folder = new File(folderPath);
+
+        if (!folder.exists()) {
+            JOptionPane.showMessageDialog(null, "Folder not found: " + folderPath, "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (deleteFiles(folder)) {
+            JOptionPane.showMessageDialog(null, "Playlist folder deleted successfully!", "Deleted", JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(null, "Failed to delete folder: " + folderPath, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private boolean deleteFiles(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (!deleteFiles(f)) {
+                        return false; // stop if one fails
+                    }
+                }
+            }
+        }
+        return file.delete(); // delete file or empty dir
     }
 
     public void display(){
