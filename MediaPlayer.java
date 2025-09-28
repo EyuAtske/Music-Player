@@ -354,7 +354,6 @@ public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerLi
         return String.format("%d:%02d", minutes, seconds);
     }
 
-
         @Override
         public void actionPerformed(ActionEvent e) {
             if(e.getSource() == addSong){
@@ -379,14 +378,28 @@ public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerLi
                 Playlist playlist = new Playlist(playlistName);
                 collection.addPlayList(playlist);
                 getSidebarSongs();
+                collection.saveCollection();
             }else if(e.getSource() == removeSong){
                 Playlist tempSong;
                 String playlistName = getDelPlaylistName();
                 if(playlistName != null){
                     tempSong = collection.secarchPlaylist(playlistName);
+                    String filepath = tempSong.currentSong();
                     if(tempSong != null){
                         tempSong.display();
                         tempSong.removeSong();
+                        if(tempSong.currentSong() != filepath){
+                            stop();
+                            musicTitle.setText("Title: ");
+                            musicArtist.setText("Artist: ");
+                            playButton.setIcon(play);
+                        }
+                        File file = new File(filepath);
+                        if (file.exists() && file.delete()) {
+                            System.out.println("File deleted: " + file.getAbsolutePath());
+                        } else {
+                            System.out.println("Could not delete file: " + file.getAbsolutePath());
+                        }
                         collection.saveCollection();
                     }else{
                         JOptionPane.showMessageDialog(null,"There is no playlist with this name", "No Playlist", JOptionPane.WARNING_MESSAGE);
@@ -401,6 +414,7 @@ public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerLi
                 String playlistName = JOptionPane.showInputDialog("Enter the name of the playlist");
                 collection.removePlaylist(playlistName);
                 getSidebarSongs();
+                collection.saveCollection();
             }else if(e.getSource() == playButton){
                 if(playButton.getIcon() == play){
                     play(playlist.currentSong());
@@ -409,6 +423,20 @@ public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerLi
                     pause();
                     playButton.setIcon(play);
                 }
+            }else if(e.getSource() == nextButton){
+                stop();
+                playlist.playNext();
+                musicTitle.setText("Title: "+playlist.currentSongTitle());
+                musicArtist.setText("Artist: "+playlist.currentSongArtist());
+                play(playlist.currentSong());
+                playButton.setIcon(pause);
+            }else if(e.getSource() == prevButton){
+                stop();
+                playlist.playPrevious();
+                musicTitle.setText("Title: "+playlist.currentSongTitle());
+                musicArtist.setText("Artist: "+playlist.currentSongArtist());
+                play(playlist.currentSong());
+                playButton.setIcon(pause);
             }
         }
 
@@ -424,11 +452,30 @@ public class MediaPlayer extends JFrame implements ActionListener, BasicPlayerLi
             for(Playlist p : collection.getCurrentPlaylists()){
                 System.out.println(p.getName());
                 DefaultMutableTreeNode playlistNode = p.getSongList();
-                root.add(playlistNode);  
+                root.add(playlistNode);
             }
             DefaultTreeModel model = (DefaultTreeModel) listSong.getModel();
             model.setRoot(root);
-            model.reload();    
+            model.reload(); 
+            listSong.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent e) {
+                    if (e.getClickCount() == 2) {
+                        DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) listSong.getLastSelectedPathComponent();
+                        if (selectedNode != null && selectedNode.isLeaf()) {
+                            Object nodeInfo = selectedNode.getUserObject();
+                            if (nodeInfo instanceof Song) {
+                                Song song = (Song) nodeInfo;
+                                System.out.println("Playing: " + song.getTitleString() + " - " + song.getArtistString());
+                                play(song.getSongPathString());
+                                musicTitle.setText("Title: "+ song.getTitleString());
+                                musicArtist.setText("Artist: "+ song.getArtistString());
+                                playButton.setIcon(pause);
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         @Override
