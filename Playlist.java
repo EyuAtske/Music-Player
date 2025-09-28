@@ -53,6 +53,10 @@ public class Playlist extends JFrame {
         return tail;
     }
 
+    public String getFolderPath(){
+        return filePath;
+    }
+
 
     public void addSong(){
         JFileChooser fileChooser = new JFileChooser();
@@ -98,14 +102,12 @@ public class Playlist extends JFrame {
     }
 
     public void playNext(){
-        //Cancle the if if not needed
         if(current.next != null){
             current = current.next;
         }
     }
 
     public void playPrevious(){
-        //Cancle the if if not needed
         if(current.prev != null){
             current = current.prev;
         }
@@ -128,27 +130,33 @@ public class Playlist extends JFrame {
         Node temp = head;
         if(head == null){
             JOptionPane.showMessageDialog(null,"There is no playlist with this name", "No Playlist", JOptionPane.WARNING_MESSAGE);
-            //display deletion was not succesfull
         }else{
             do{
                 if(title.equalsIgnoreCase(temp.song.getTitleString())){
+                    if (temp == current) {
+                        if (temp.next != null) {
+                            current = temp.next;
+                        } else if (temp.prev != null) {
+                            current = temp.prev;
+                        } else {
+                            current = null;
+                        }
+                    }
+
                     if (temp.prev != null) {
                         temp.prev.next = temp.next;
                     } else {
                         head = temp.next;
-                        if (head != null) {
-                            head.prev = null;
-                        }
+                        if (head != null) head.prev = null;
                     }
 
                     if (temp.next != null) {
                         temp.next.prev = temp.prev;
                     } else {
                         tail = temp.prev;
-                        if (tail != null) {
-                            tail.next = null;
-                        }
+                        if (tail != null) tail.next = null;
                     }
+
                     temp.next = null;
                     temp.prev = null;
                     JOptionPane.showMessageDialog(null,"The song deletion was succsusfull", "Song Deleted", JOptionPane.INFORMATION_MESSAGE);
@@ -165,7 +173,7 @@ public class Playlist extends JFrame {
         DefaultMutableTreeNode songList = new DefaultMutableTreeNode(this.name);
         Node temp = head;
         if(head == null){
-            JOptionPane.showMessageDialog(null,"There is no song in the playlist", "No Song", JOptionPane.WARNING_MESSAGE);
+            //JOptionPane.showMessageDialog(null,"There is no song in the playlist", "No Song", JOptionPane.WARNING_MESSAGE);
         }else{
             do{
                 DefaultMutableTreeNode item = new DefaultMutableTreeNode(temp.song);
