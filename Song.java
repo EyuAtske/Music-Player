@@ -29,6 +29,10 @@ public class Song implements Serializable {
         this.artist = artist;
     }
 
+    public void setSongPath(String songPath){
+        this.songPath = songPath;
+    }
+
     @Override
     public String toString(){
         return title + " by " + artist;
