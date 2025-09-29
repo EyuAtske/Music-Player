@@ -125,6 +125,10 @@ public class Playlist extends JFrame {
         return current.song.getArtistString();
     }
 
+    public Song getCurrentSong(){
+        return current.song;
+    }
+
     public void removeSong(){
         String title = JOptionPane.showInputDialog("Enter the title of the song:");//get title from user input
         Node temp = head;
